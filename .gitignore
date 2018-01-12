@@ -8,5 +8,5 @@ publish.sh
 .c9
 pendingtest
 .nyc_output
-scripts
+react-dtui
 build

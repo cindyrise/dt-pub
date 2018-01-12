@@ -15,8 +15,8 @@ const join = require('path').join;
 const fs = require('fs');
 const path=require('path');
 const exec = require('child_process').exec;
+const spawn = require('child_process').spawn;
 const curPath= path.resolve('./');
-console.log(curPath);
 //console utils
 const argv = require('minimist')(process.argv.slice(2));
 const chalk = require('chalk');
@@ -201,6 +201,9 @@ rimraf('build', () => {
     // create the dist folder for UMD bundles
     fs.mkdirSync(join('build', 'dist'));
     // adding build tasks
+    let from = join(__dirname, '../react-dtui/package.json');
+    let to = join(__dirname, '../build');
+    spawn('cp', ['-r', from, to]);
     tasks.push(
         //Node individual components build
         createTask('Making Babel Modules', createNodeBuild()),
