@@ -6,7 +6,8 @@
   "scripts": {
     "test": "cd dtui && npm publish",
     "buildDtui": "node scripts/buildDtui.js",
-    "buildDtcli": "node scripts/buildDtcli.js"
+    "buildDtcli": "node scripts/buildDtcli.js",
+    "buildDttool": "echo 敬请期待"
   },
   "author": "",
   "license": "ISC",
