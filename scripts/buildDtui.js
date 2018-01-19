@@ -7,16 +7,16 @@ const cjs = require('rollup-plugin-commonjs');
 const uglify = require('rollup-plugin-uglify');
 const replace = require('rollup-plugin-replace');
 const resolveNode = require('rollup-plugin-node-resolve');
-const less = require('rollup-plugin-less');
+const sass = require('rollup-plugin-sass');
 const progress = require('rollup-plugin-progress');
 //file handling
 const rimraf = require('rimraf');
 const join = require('path').join;
 const fs = require('fs');
-const path=require('path');
+const path = require('path');
 const exec = require('child_process').exec;
 const spawn = require('child_process').spawn;
-const curPath= path.resolve('./');
+const curPath = path.resolve('./');
 //console utils
 const argv = require('minimist')(process.argv.slice(2));
 const chalk = require('chalk');
@@ -55,7 +55,7 @@ function makeBundleAttributes(bundleType) {
             atrs.format = 'umd';
             atrs.plugins.push(uglify());
         case Bundles.UMD_DEV:
-            atrs.path = './build/libs/';
+            atrs.path = './dtui/libs/';
             atrs.format = 'umd';
             break;
         case Bundles.IIFE_PROD:
@@ -63,7 +63,7 @@ function makeBundleAttributes(bundleType) {
             atrs.sourceMap = false;
             atrs.plugins.push(uglify());
         case Bundles.IIFE_DEV:
-            atrs.path = './build/dist/';
+            atrs.path = './dtui/dist/';
             break;
     }
 
@@ -76,7 +76,7 @@ function makeConfig(bundleType) {
     let config = {
         input: `${curPath}/react-dtui/src/index.js`,
         plugins: [
-            less({
+            sass({
                 output: atrs.path + 'react-dtui.css'
             }),
             cjs({
@@ -119,7 +119,6 @@ function createTask(msg, fn) {
 //run async tasks in sync to avoid output mess
 function runTasks($tasks) {
     let index = 0;
-
     return new Promise((res, rej) => {
 
         function next() {
@@ -138,7 +137,7 @@ function runTasks($tasks) {
 function createNodeBuild() {
     return (res, rej) => {
         let count = 0;
-        let bat = exec('NODE_ENV=production babel ../react-dtui/src --out-dir ./build/libs --copy-files', { stdio: [0, 1, 2] }, (error, stdout, stderr) => {
+        let bat = exec('NODE_ENV=production babel ../react-dtui/src --out-dir ./dtui/libs --copy-files', { stdio: [0, 1, 2] }, (error, stdout, stderr) => {
             if (error) {
                 rej(error);
                 return;
@@ -157,10 +156,10 @@ function createWebpackBuild(config) {
     return (res, rej) => {
         webpack(config, (err, stats) => {
             if (err || stats.hasErrors()) {
-                rej('webpack build error');
+                rej('webpack dtui error');
             }
             log(stats.toString({
-                chunks: false,  // Makes the build much quieter
+                chunks: false,  // Makes the dtui much quieter
                 colors: true    // Shows colors in the console
             }));
             res();
@@ -192,35 +191,51 @@ function createBundle(bundleType) {
             });
     };
 }
+log(chalk.white(chalk.underline.bgBlue('git clone ... ')));
 
-//clean directory
-rimraf('build', () => {
-    // create a new build directory
-    fs.mkdirSync('build');
-    fs.mkdirSync(join('build', 'libs'));
-    // create the dist folder for UMD bundles
-    fs.mkdirSync(join('build', 'dist'));
-    // adding build tasks
-    let from = join(__dirname, '../react-dtui/package.json');
-    let to = join(__dirname, '../build');
-    spawn('cp', ['-r', from, to]);
-    tasks.push(
-        //Node individual components build
-        createTask('Making Babel Modules', createNodeBuild()),
-        //createTask('Making UMD Dev Bundles', createBundle(Bundles.UMD_DEV)),
-        createTask('Making UMD Production Bundles', createBundle(Bundles.UMD_PROD)),
-        //createTask('Making IIFE Dev Bundles', createBundle(Bundles.IIFE_DEV)),
-        createTask('Making IIFE Production Bundles', createBundle(Bundles.IIFE_PROD))
-    );
-
-    // run tasks
-    runTasks(tasks).then(() => {
-        // all done here
-        CLI.section('FINISH BUILD');
-    }, err => {
-        // rejection happened
-        log('Error', err);
+rimraf('react-dtui', () => {
+    exec("git clone https://github.com/cindyrise/react-dtui.git", (error, stdout, stderr) => {
+        if (error) {
+            console.error('error: ' + error);
+            return;
+        }
+        log(chalk.white(chalk.underline.bgBlue('git clone 完成 ')));
+        buildPackage();
     });
+})
 
-});
+function buildPackage() {
+    rimraf('dtui', () => {
+        fs.mkdirSync('dtui');
+        fs.mkdirSync(join('dtui', 'libs'));
+        fs.mkdirSync(join('dtui', 'dist'));
+        let from = join(__dirname, '../react-dtui/package.json');
+        let to = join(__dirname, '../dtui');
+        spawn('cp', ['-r', from, to]);
+        log(chalk.white(chalk.underline.bgBlue('开始打包dtui项目')));
+        tasks.push(
+            //Node individual components dtui
+            createTask('Making Babel Modules', createNodeBuild()),
+            //createTask('Making UMD Dev Bundles', createBundle(Bundles.UMD_DEV)),
+            createTask('Making UMD Production Bundles', createBundle(Bundles.UMD_PROD)),
+            //createTask('Making IIFE Dev Bundles', createBundle(Bundles.IIFE_DEV)),
+            createTask('Making IIFE Production Bundles', createBundle(Bundles.IIFE_PROD))
+        );
+        // run tasks
+        runTasks(tasks).then(() => {
+            log(chalk.white(chalk.underline.bgBlue('打包dtui项目完成')));
+            exec("cd dtui && npm publish", (error, stdout, stderr) => {
+                if (error) {
+                    console.error('error: ' + error);
+                    return;
+                }
+                log(chalk.white(chalk.underline.bgBlue(`恭喜，${stdout}发布至NPM成功。`)));
+            });
+        }, err => {
+            log('Error', err);
+        });
+
+    });
+}
+
 

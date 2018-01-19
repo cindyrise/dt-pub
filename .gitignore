@@ -10,3 +10,6 @@ pendingtest
 .nyc_output
 react-dtui
 build
+generator-dtcli
+dtui
+dtcli
