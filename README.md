@@ -15,18 +15,3 @@
 ```
   npm run buildDtui 发布dttool工具库
  ```
- #### UI组件库地址 
-
-[npm](https://www.npmjs.com/package/react-dtui)
-
-[git](https://github.com/cindyrise/react-dtui.git)
-
-==================================================
-
-#### 脚手架地址
-
-[npm](https://www.npmjs.com/package/generator-dtcli)
-
-[git](https://github.com/cindyrise/generator-dtcli)
-
-==================================================

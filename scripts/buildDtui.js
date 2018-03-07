@@ -55,7 +55,7 @@ function makeBundleAttributes(bundleType) {
             atrs.format = 'umd';
             atrs.plugins.push(uglify());
         case Bundles.UMD_DEV:
-            atrs.path = './dtui/libs/';
+            atrs.path = './dtui-pub/libs/';
             atrs.format = 'umd';
             break;
         case Bundles.IIFE_PROD:
@@ -63,7 +63,7 @@ function makeBundleAttributes(bundleType) {
             atrs.sourceMap = false;
             atrs.plugins.push(uglify());
         case Bundles.IIFE_DEV:
-            atrs.path = './dtui/dist/';
+            atrs.path = './dtui-pub/dist/';
             break;
     }
 
@@ -137,7 +137,7 @@ function runTasks($tasks) {
 function createNodeBuild() {
     return (res, rej) => {
         let count = 0;
-        let bat = exec('NODE_ENV=production babel ../react-dtui/src --out-dir ./dtui/libs --copy-files', { stdio: [0, 1, 2] }, (error, stdout, stderr) => {
+        let bat = exec('NODE_ENV=production babel ../react-dtui/src --out-dir ./dtui-pub/libs --copy-files', { stdio: [0, 1, 2] }, (error, stdout, stderr) => {
             if (error) {
                 rej(error);
                 return;
@@ -204,15 +204,16 @@ rimraf('react-dtui', () => {
     });
 })
 
+
 function buildPackage() {
-    rimraf('dtui', () => {
-        fs.mkdirSync('dtui');
-        fs.mkdirSync(join('dtui', 'libs'));
-        fs.mkdirSync(join('dtui', 'dist'));
+    rimraf('dtui-pub', () => {
+        fs.mkdirSync('dtui-pub');
+        fs.mkdirSync(join('dtui-pub', 'libs'));
+        fs.mkdirSync(join('dtui-pub', 'dist'));
         let from = join(__dirname, '../react-dtui/package.json');
-        let to = join(__dirname, '../dtui');
+        let to = join(__dirname, '../dtui-pub');
         spawn('cp', ['-r', from, to]);
-        log(chalk.white(chalk.underline.bgBlue('开始打包dtui项目')));
+        log(chalk.white(chalk.underline.bgBlue('开始打包dtui-pub项目')));
         tasks.push(
             //Node individual components dtui
             createTask('Making Babel Modules', createNodeBuild()),
@@ -223,7 +224,7 @@ function buildPackage() {
         );
         // run tasks
         runTasks(tasks).then(() => {
-            log(chalk.white(chalk.underline.bgBlue('打包dtui项目完成')));
+            log(chalk.white(chalk.underline.bgBlue('打包dtui-pub项目完成')));
             exec("cd dtui && npm publish", (error, stdout, stderr) => {
                 if (error) {
                     console.error('error: ' + error);
