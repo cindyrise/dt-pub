@@ -24,10 +24,9 @@ function buildPackage() {
         let to = join(__dirname, '../dtcli-pub');
         spawn('cp', ['-r', from, to]);
         log(chalk.white(chalk.underline.bgBlue('开始打包dtcli-pub项目')));
-        exec("cd dtcli-pub && nrm use npm  && npm publish", (error, stdout, stderr) => {
+        exec("cd dtcli-pub && npm publish", (error, stdout, stderr) => {
             if (error) {
                 console.error('error: ' + error);
-                //
                 return;
             }
              log(chalk.white(chalk.underline.bgBlue(`恭喜，${stdout}发布至NPM成功。`)));
